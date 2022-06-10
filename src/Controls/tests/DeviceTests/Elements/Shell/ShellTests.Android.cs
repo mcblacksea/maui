@@ -14,6 +14,9 @@ using Microsoft.Maui.Platform;
 using Microsoft.Maui.Controls.Platform;
 using Xunit;
 using AView = Android.Views.View;
+using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
+using static Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -263,6 +266,38 @@ namespace Microsoft.Maui.DeviceTests
 				drawerLayout.DrawerOpened -= OnDrawerOpened;
 				taskCompletionSource.SetResult(true);
 			}
+		}
+
+		protected async Task ScrollFlyoutToBottom(ShellRenderer shellRenderer)
+		{
+			var flyoutItems = GetFlyoutMenuReyclerView(shellRenderer);
+
+			TaskCompletionSource<object> result = new TaskCompletionSource<object>();
+			flyoutItems.ScrollChange += OnFlyoutItemsScrollChange;
+			flyoutItems.ScrollToPosition(flyoutItems.GetAdapter().ItemCount - 1);
+			await result.Task.WaitAsync(TimeSpan.FromSeconds(2));
+			await Task.Delay(10);
+
+			void OnFlyoutItemsScrollChange(object sender, AView.ScrollChangeEventArgs e)
+			{
+				flyoutItems.ScrollChange -= OnFlyoutItemsScrollChange;
+				result.TrySetResult(true);
+			}
+
+			// The appbar layout won't offset if you programmatically scroll the RecyclerView
+			// I haven't found a way to match the exact behavior when you touch and scroll
+			// I think we'd have to actually send touch events through adb
+
+			var coordinatorLayout = flyoutItems.Parent.GetParentOfType<CoordinatorLayout>();
+			var appbarLayout = coordinatorLayout.GetFirstChildOfType<AppBarLayout>();
+			var clLayoutParams = appbarLayout.LayoutParameters as CoordinatorLayout.LayoutParams;
+			var behavior = clLayoutParams.Behavior as AppBarLayout.Behavior;
+			var headerContainer = appbarLayout.GetFirstChildOfType<HeaderContainer>();
+
+			behavior.OnNestedPreScroll(coordinatorLayout, appbarLayout, flyoutItems, 0, 100000, new int[2], ViewCompat.TypeTouch);
+			await Task.Delay(10);
+
+
 		}
 
 		ShellFlyoutRenderer GetDrawerLayout(ShellRenderer shellRenderer)

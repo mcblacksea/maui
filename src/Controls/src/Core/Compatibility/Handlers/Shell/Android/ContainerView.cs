@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		ShellViewRenderer _shellContentView;
 		readonly IMauiContext _mauiContext;
 		internal AView PlatformView => _view?.Handler?.PlatformView as AView;
+		internal Graphics.Size DesiredSize { get; private set; }
 
 		public ContainerView(Context context, View view, IMauiContext mauiContext) : base(context)
 		{
@@ -117,6 +118,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			var size = _shellContentView.Measure(measureWidth, measureHeight, null, (int?)maxHeight);
+			DesiredSize = size;
 			var newHeight = size.Height;
 
 			if (_parentTopPadding > 0)

@@ -26,7 +26,7 @@
         </CollectionView>
     </Shell.FlyoutContent>-->
 
-    <Shell.FlyoutHeader>
+    <!--<Shell.FlyoutHeader>
         <Label Text="Header Content"></Label>
     </Shell.FlyoutHeader>
     <Shell.FlyoutContent>
@@ -36,16 +36,16 @@
     </Shell.FlyoutContent>
     <Shell.FlyoutFooter>
         <Label Text="Footer Content"></Label>
-    </Shell.FlyoutFooter>
+    </Shell.FlyoutFooter>-->
 
-    <!--<Shell.FlyoutHeader>
-        <ScrollView>
-            <VerticalStackLayout Background="Purple" HeightRequest="200" VerticalOptions="Fill">
-                <Label Text="Header Content" VerticalOptions="Fill"></Label>
+    <Shell.FlyoutHeader>
+        <ScrollView MinimumHeightRequest="100">
+            <VerticalStackLayout Background="Purple" HeightRequest="200">
+                <Label Text="Header Content"></Label>
             </VerticalStackLayout>
         </ScrollView>
     </Shell.FlyoutHeader>
-    <Shell.FlyoutFooter>
+    <!--<Shell.FlyoutFooter>
         <VerticalStackLayout Background="Green">
             <Label Text="Footer Content"></Label>
         </VerticalStackLayout>

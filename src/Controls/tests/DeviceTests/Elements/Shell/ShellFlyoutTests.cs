@@ -1,8 +1,10 @@
 ﻿#if !IOS
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 #if ANDROID || IOS
@@ -46,8 +48,50 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(headerFrame.Height + contentFrame.Height, footerFrame.Y);
 				Assert.Equal(footerFrame.Width, flyoutFrame.Width);
 
-				//Alll three views should measure to the height of the flyout
+				//All three views should measure to the height of the flyout
 				Assert.Equal(headerFrame.Height + contentFrame.Height + footerFrame.Height, flyoutFrame.Height);
+			});
+		}
+
+		[Fact]
+		public async Task FlyoutHeaderCollapsesOnScroll()
+		{
+			await RunShellTest(shell =>
+			{
+				Enumerable.Range(0, 100)
+					.ForEach(i =>
+					{
+						shell.FlyoutHeaderBehavior = FlyoutHeaderBehavior.CollapseOnScroll;
+						shell.Items.Add(new FlyoutItem() { Title = $"FlyoutItem {i}", Items = { new ContentPage() } });
+					});
+
+				var layout = new VerticalStackLayout()
+				{
+					new Label()
+					{
+						Text = "Header Content"
+					}
+				};
+
+				layout.HeightRequest = 200;
+
+				shell.FlyoutHeader = new ScrollView()
+				{
+					MinimumHeightRequest = 100,
+					Content = layout
+				};
+			},
+			async (shell, handler) =>
+			{
+				await OpenFlyout(handler);
+				await Task.Delay(200);
+
+				var initialBox = (shell.FlyoutHeader as IView).GetBoundingBox();
+				Assert.Equal(200, initialBox.Height);
+				await ScrollFlyoutToBottom(handler);
+
+				var scrolledBox = (shell.FlyoutHeader as IView).GetBoundingBox();
+				Assert.Equal(100, scrolledBox.Height);
 			});
 		}
 

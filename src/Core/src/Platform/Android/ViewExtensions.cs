@@ -339,7 +339,9 @@ namespace Microsoft.Maui.Platform
 			return platformView.GetPlatformViewBounds();
 		}
 
-		internal static Rect GetPlatformViewBounds(this View platformView)
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public static Rect GetPlatformViewBounds(this View platformView)
+#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			if (platformView?.Context == null)
 				return new Rect();

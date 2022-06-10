@@ -70,6 +70,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		class ThingBehavior : AppBarLayout.Behavior
+		{
+			public override void OnNestedPreScroll(CoordinatorLayout coordinatorLayout, Java.Lang.Object child, AView target, int dx, int dy, int[] consumed, int type)
+			{
+				base.OnNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type);
+			}
+		}
+
 		protected virtual void LoadView(IShellContext shellContext)
 		{
 			var context = shellContext.AndroidContext;
@@ -77,6 +85,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var coordinator = (ViewGroup)layoutInflator.Inflate(Controls.Resource.Layout.flyoutcontent, null);
 
 			_appBar = coordinator.FindViewById<AppBarLayout>(Controls.Resource.Id.flyoutcontent_appbar);
+
+			(_appBar.LayoutParameters as CoordinatorLayout.LayoutParams)
+				.Behavior = new ThingBehavior();
 
 			_rootView = coordinator as ViewGroup;
 
@@ -262,7 +273,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				_headerView.LayoutChange += OnHeaderViewLayoutChange;
 
-				_headerView.SetMinimumHeight(_actionBarHeight);
 				_headerFrameLayout.LayoutParameters = new AppBarLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
 				{
 					ScrollFlags = AppBarLayout.LayoutParams.ScrollFlagScroll
@@ -502,10 +512,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var margin = _flyoutHeader?.Margin ?? default(Thickness);
 
-			var minimumHeight = Convert.ToInt32(_actionBarHeight + context.ToPixels(margin.Top) - context.ToPixels(margin.Bottom));
-			_headerView.SetMinimumHeight(minimumHeight);
-			_headerFrameLayout.SetMinimumHeight(minimumHeight);
-
 			switch (_shellContext.Shell.FlyoutHeaderBehavior)
 			{
 				case FlyoutHeaderBehavior.Default:
@@ -547,7 +553,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			_headerView.SetParentTopPadding(-verticalOffset);
-			_headerFrameLayout.SetPadding(0, -verticalOffset, 0, 0);
 			_headerView.MaybeRequestLayout();
 
 		}
@@ -638,6 +643,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (Parent is AView view)
 					ElevationHelper.SetElevation(view, View);
+			}
+
+			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+			{
+				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+
+				if (Parent is AView aView)
+				{
+					aView.SetPadding(0, (int)(DesiredSize.Height - MeasuredHeight), 0, 0);
+					aView.SetMinimumHeight((int)(DesiredSize.Height - MeasuredHeight));
+				}
 			}
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
